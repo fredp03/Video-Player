@@ -479,14 +479,26 @@ class VideoPlayerRenderChild extends MarkdownRenderChild {
 export default class VideoPlayerPlugin extends Plugin {
 	settings: VideoPlayerSettings;
 
-	async onload() {
-		await this.loadSettings();
+        async onload() {
+                await this.loadSettings();
 
-		// Register the code block processor
-		this.registerMarkdownCodeBlockProcessor('video-player', (source, el, ctx) => {
-			this.processVideoPlayer(source, el, ctx);
-		});
-	}
+                // Register the code block processor
+                this.registerMarkdownCodeBlockProcessor('video-player', (source, el, ctx) => {
+                        this.processVideoPlayer(source, el, ctx);
+                });
+
+                // Add a simple command to insert a video player code block
+                this.addCommand({
+                        id: 'insert-video-player',
+                        name: 'Insert Video Player',
+                        editorCallback: (editor) => {
+                                const url = window.prompt('Enter YouTube URL');
+                                if (url) {
+                                        editor.replaceSelection(`\`\`\`video-player\nurl: ${url}\n\`\`\`\n`);
+                                }
+                        }
+                });
+        }
 
 	onunload() {
 		// Clean up YouTube API script if it exists

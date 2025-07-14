@@ -44,6 +44,10 @@ url: https://www.youtube.com/watch?v=dQw4w9WgXcQ
 - Double-click a bookmark to edit its text
 - Command/Ctrl + double-click to delete a bookmark
 
+## Commands
+
+- **Insert Video Player**: Adds a video player code block at the cursor. You will be prompted for a YouTube URL.
+
 ## Installation
 
 ### Manual Installation
