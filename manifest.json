@@ -1,0 +1,11 @@
+{
+  "id": "obsidian-video-player",
+  "name": "Video Player",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "An interactive video player with bookmark functionality for YouTube videos",
+  "author": "fredp03",
+  "authorUrl": "https://github.com/fredp03",
+  "fundingUrl": "",
+  "isDesktopOnly": false
+}

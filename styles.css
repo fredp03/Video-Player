@@ -1,0 +1,220 @@
+/* Video Player Plugin Styles */
+
+.video-player-wrapper {
+    font-family: var(--font-interface);
+    background-color: transparent;
+}
+
+/* Hide scrollbar for webkit browsers (Chrome, Safari, Edge) */
+.video-player-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.video-player-wrapper {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.video-player-wrapper .ytmb-holder {
+    background: var(--background-secondary);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.video-player-wrapper .bookmark {
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+    transition: background-color 0.2s ease;
+}
+
+.video-player-wrapper .bookmark:hover {
+    background: var(--background-modifier-hover);
+}
+
+.video-player-wrapper .bookmark-text {
+    color: var(--text-normal);
+    transition: opacity 0.2s ease;
+}
+
+.video-player-wrapper .timestamp {
+    color: var(--text-muted);
+}
+
+.video-player-wrapper .new-bookmark-input {
+    background: var(--background-primary);
+    border: 1px solid var(--background-modifier-border);
+}
+
+.video-player-wrapper .new-bookmark-input input {
+    background: transparent;
+    color: var(--text-normal);
+}
+
+.video-player-wrapper .new-bookmark-input input::placeholder {
+    color: var(--text-muted);
+}
+
+.video-player-wrapper .save-bookmark {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+    transition: background-color 0.2s ease;
+}
+
+.video-player-wrapper .save-bookmark:hover {
+    background: var(--interactive-accent-hover);
+}
+
+.video-player-wrapper .cancel-bookmark {
+    background: transparent;
+    border: 1px solid var(--background-modifier-border);
+    color: var(--text-normal);
+    transition: background-color 0.2s ease;
+}
+
+.video-player-wrapper .cancel-bookmark:hover {
+    background: var(--background-modifier-hover);
+}
+
+/* Smooth dropdown animation for bookmarks */
+.video-player-wrapper .bookmarks-wrapper {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-origin: top;
+    margin: 0 auto;
+}
+
+.video-player-bookmarks-hiding {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+    margin-bottom: 0;
+    transform: scaleY(0);
+    overflow: hidden;
+}
+
+.video-player-bookmarks-showing {
+    opacity: 1;
+    max-height: 1000px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    transform: scaleY(1);
+}
+
+/* Smooth transition for bookmark editing states */
+.video-player-wrapper .bookmark-input {
+    transition: all 0.2s ease;
+    animation: fadeInScale 0.2s ease forwards;
+    background: transparent;
+    color: var(--text-normal);
+    border: none;
+    outline: none;
+    font-size: 11px;
+    font-family: var(--font-interface);
+    font-weight: 400;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Progress bar styling */
+.video-player-wrapper .progress-container {
+    position: relative;
+    cursor: pointer;
+}
+
+.video-player-wrapper .video-position {
+    cursor: grab;
+    transition: left 0.1s ease;
+}
+
+.video-player-wrapper .video-position:active {
+    cursor: grabbing;
+}
+
+/* Video container styling */
+.video-player-wrapper .video-container {
+    cursor: pointer;
+}
+
+.video-player-wrapper .video-info {
+    transition: opacity 0.3s ease;
+}
+
+.video-player-wrapper .bottom-controls {
+    transition: opacity 0.3s ease;
+}
+
+/* Control buttons */
+.video-player-wrapper .start-stop-control,
+.video-player-wrapper .bookmark-button,
+.video-player-wrapper .add-bookmark-btn {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.video-player-wrapper .start-stop-control:hover,
+.video-player-wrapper .bookmark-button:hover {
+    opacity: 0.7;
+}
+
+.video-player-wrapper .add-bookmark-btn {
+    transition: opacity 0.3s ease;
+}
+
+/* SVG icon colors */
+.video-player-wrapper svg path {
+    transition: fill 0.2s ease, stroke 0.2s ease;
+}
+
+/* Responsive design */
+@media (max-width: 600px) {
+    .video-player-wrapper {
+        width: 100% !important;
+        max-width: 550px;
+    }
+    
+    .video-player-wrapper .ytmb-holder {
+        width: 100% !important;
+        max-width: 502px;
+    }
+    
+    .video-player-wrapper .progress-container {
+        width: 90% !important;
+        max-width: 472px;
+    }
+    
+    .video-player-wrapper .bookmarks-wrapper,
+    .video-player-wrapper .new-bookmark-input {
+        width: 90% !important;
+        max-width: 444px;
+    }
+}
+
+/* Theme-specific adjustments */
+.theme-dark .video-player-wrapper .ytmb-holder {
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.5);
+}
+
+.theme-light .video-player-wrapper .ytmb-holder {
+    box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* Accessibility improvements */
+.video-player-wrapper button:focus,
+.video-player-wrapper input:focus {
+    outline: 2px solid var(--interactive-accent);
+    outline-offset: 2px;
+}
+
+/* Selection styling */
+.video-player-wrapper ::selection {
+    background-color: var(--text-selection);
+}
