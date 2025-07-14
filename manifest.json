@@ -1,0 +1,10 @@
+{
+  "id": "video-player",
+  "name": "Video Player",
+  "version": "0.0.1",
+  "minAppVersion": "0.13.0",
+  "description": "Embed a custom YouTube video player via code blocks",
+  "author": "Converted by Codex",
+  "authorUrl": "",
+  "isDesktopOnly": false
+}
