@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Player Component Test</title>
+    <style>
+        /* Base styles and CSS variables similar to Obsidian */
+        :root {
+            --font-interface: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+            --background-primary: #ffffff;
+            --background-secondary: #f5f5f5;
+            --background-modifier-border: #e0e0e0;
+            --background-modifier-hover: #f0f0f0;
+            --text-normal: #2e3338;
+            --text-muted: #888888;
+            --text-on-accent: #ffffff;
+            --text-selection: rgba(0, 122, 255, 0.2);
+            --interactive-accent: #007acc;
+            --interactive-accent-hover: #005a9e;
+        }
+
+        /* Dark theme */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --background-primary: #202020;
+                --background-secondary: #161616;
+                --background-modifier-border: #3a3a3a;
+                --background-modifier-hover: #2a2a2a;
+                --text-normal: #dcddde;
+                --text-muted: #888888;
+                --text-on-accent: #ffffff;
+                --text-selection: rgba(100, 149, 237, 0.3);
+                --interactive-accent: #7c3aed;
+                --interactive-accent-hover: #6d28d9;
+            }
+        }
+
+        body {
+            font-family: var(--font-interface);
+            background-color: var(--background-primary);
+            color: var(--text-normal);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--text-normal);
+            margin-bottom: 30px;
+        }
+
+        .description {
+            background: var(--background-secondary);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+            border: 1px solid var(--background-modifier-border);
+        }
+
+        /* Video Player Plugin Styles */
+        .video-player-wrapper {
+            font-family: var(--font-interface);
+            background-color: transparent;
+        }
+
+        /* Hide scrollbar for webkit browsers (Chrome, Safari, Edge) */
+        .video-player-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Hide scrollbar for Firefox */
+        .video-player-wrapper {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .video-player-wrapper .ytmb-holder {
+            background: var(--background-secondary);
+            border: 1px solid var(--background-modifier-border);
+        }
+
+        .video-player-wrapper .bookmark {
+            background: var(--background-primary);
+            border: 1px solid var(--background-modifier-border);
+            color: var(--text-normal);
+            transition: background-color 0.2s ease;
+        }
+
+        .video-player-wrapper .bookmark:hover {
+            background: var(--background-modifier-hover);
+        }
+
+        .video-player-wrapper .bookmark-text {
+            color: var(--text-normal);
+            transition: opacity 0.2s ease;
+        }
+
+        .video-player-wrapper .timestamp {
+            color: var(--text-muted);
+        }
+
+        .video-player-wrapper .new-bookmark-input {
+            background: var(--background-primary);
+            border: 1px solid var(--background-modifier-border);
+        }
+
+        .video-player-wrapper .new-bookmark-input input {
+            background: transparent;
+            color: var(--text-normal);
+        }
+
+        .video-player-wrapper .new-bookmark-input input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .video-player-wrapper .save-bookmark {
+            background: var(--interactive-accent);
+            color: var(--text-on-accent);
+            transition: background-color 0.2s ease;
+        }
+
+        .video-player-wrapper .save-bookmark:hover {
+            background: var(--interactive-accent-hover);
+        }
+
+        .video-player-wrapper .cancel-bookmark {
+            background: transparent;
+            border: 1px solid var(--background-modifier-border);
+            color: var(--text-normal);
+            transition: background-color 0.2s ease;
+        }
+
+        .video-player-wrapper .cancel-bookmark:hover {
+            background: var(--background-modifier-hover);
+        }
+
+        /* Smooth dropdown animation for bookmarks */
+        .video-player-wrapper .bookmarks-wrapper {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: top;
+            margin: 0 auto;
+        }
+
+        .video-player-bookmarks-hiding {
+            opacity: 0;
+            max-height: 0;
+            margin-top: 0;
+            margin-bottom: 0;
+            transform: scaleY(0);
+            overflow: hidden;
+        }
+
+        .video-player-bookmarks-showing {
+            opacity: 1;
+            max-height: 1000px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            transform: scaleY(1);
+        }
+
+        /* Smooth transition for bookmark editing states */
+        .video-player-wrapper .bookmark-input {
+            transition: all 0.2s ease;
+            animation: fadeInScale 0.2s ease forwards;
+            background: transparent;
+            color: var(--text-normal);
+            border: none;
+            outline: none;
+            font-size: 11px;
+            font-family: var(--font-interface);
+            font-weight: 400;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        /* Progress bar styling */
+        .video-player-wrapper .progress-container {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .video-player-wrapper .video-position {
+            cursor: grab;
+            transition: left 0.1s ease;
+        }
+
+        .video-player-wrapper .video-position:active {
+            cursor: grabbing;
+        }
+
+        /* Video container styling */
+        .video-player-wrapper .video-container {
+            cursor: pointer;
+        }
+
+        .video-player-wrapper .video-info {
+            transition: opacity 0.3s ease;
+        }
+
+        .video-player-wrapper .bottom-controls {
+            transition: opacity 0.3s ease;
+        }
+
+        /* Control buttons */
+        .video-player-wrapper .start-stop-control,
+        .video-player-wrapper .bookmark-button,
+        .video-player-wrapper .add-bookmark-btn {
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+        }
+
+        .video-player-wrapper .start-stop-control:hover,
+        .video-player-wrapper .bookmark-button:hover {
+            opacity: 0.7;
+        }
+
+        .video-player-wrapper .add-bookmark-btn {
+            transition: opacity 0.3s ease;
+        }
+
+        /* SVG icon colors */
+        .video-player-wrapper svg path {
+            transition: fill 0.2s ease, stroke 0.2s ease;
+        }
+
+        /* Responsive design */
+        @media (max-width: 600px) {
+            .video-player-wrapper {
+                width: 100% !important;
+                max-width: 550px;
+            }
+            
+            .video-player-wrapper .ytmb-holder {
+                width: 100% !important;
+                max-width: 502px;
+            }
+            
+            .video-player-wrapper .progress-container {
+                width: 90% !important;
+                max-width: 472px;
+            }
+            
+            .video-player-wrapper .bookmarks-wrapper,
+            .video-player-wrapper .new-bookmark-input {
+                width: 90% !important;
+                max-width: 444px;
+            }
+        }
+
+        /* Theme-specific adjustments */
+        @media (prefers-color-scheme: dark) {
+            .video-player-wrapper .ytmb-holder {
+                box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.5);
+            }
+        }
+
+        @media (prefers-color-scheme: light) {
+            .video-player-wrapper .ytmb-holder {
+                box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+            }
+        }
+
+        /* Accessibility improvements */
+        .video-player-wrapper button:focus,
+        .video-player-wrapper input:focus {
+            outline: 2px solid var(--interactive-accent);
+            outline-offset: 2px;
+        }
+
+        /* Selection styling */
+        .video-player-wrapper ::selection {
+            background-color: var(--text-selection);
+        }
+
+        .demo-controls {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--background-secondary);
+            border-radius: 6px;
+            border: 1px solid var(--background-modifier-border);
+        }
+
+        .demo-controls h3 {
+            margin-top: 0;
+            color: var(--text-normal);
+        }
+
+        .demo-controls button {
+            background: var(--interactive-accent);
+            color: var(--text-on-accent);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+        }
+
+        .demo-controls button:hover {
+            background: var(--interactive-accent-hover);
+        }
+
+        .demo-controls input {
+            background: var(--background-primary);
+            border: 1px solid var(--background-modifier-border);
+            color: var(--text-normal);
+            padding: 6px 10px;
+            border-radius: 4px;
+            width: 300px;
+            margin-right: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Video Player Component Test</h1>
+        
+        <div class="description">
+            <p><strong>Test Environment:</strong> This page simulates the video player component outside of Obsidian for testing purposes.</p>
+            <p><strong>Features to test:</strong> Play/pause controls, progress bar seeking, bookmark functionality, responsive design, and theme adaptation.</p>
+        </div>
+
+        <!-- Video Player Component -->
+        <div id="video-player-container"></div>
+
+        <!-- Demo Controls -->
+        <div class="demo-controls">
+            <h3>Demo Controls</h3>
+            <input type="text" id="video-url" placeholder="Enter YouTube URL (e.g., https://www.youtube.com/watch?v=dQw4w9WgXcQ)" value="https://www.youtube.com/watch?v=dQw4w9WgXcQ">
+            <button onclick="loadVideo()">Load Video</button>
+            <button onclick="toggleTheme()">Toggle Theme</button>
+            <br><br>
+            <p><strong>Sample URLs to try:</strong></p>
+            <button onclick="loadSampleVideo('dQw4w9WgXcQ')">Rick Roll (Classic)</button>
+            <button onclick="loadSampleVideo('jNQXAC9IVRw')">Me at the Zoo (First YouTube Video)</button>
+            <button onclick="loadSampleVideo('9bZkp7q19f0')">Gangnam Style</button>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentPlayer = null;
+        let playerInstance = null;
+        let isDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+        // Video Player Instance Class (adapted from the plugin)
+        class VideoPlayerInstance {
+            constructor(container, player) {
+                this.container = container;
+                this.player = player;
+                this.isPlaying = false;
+                this.currentTime = 0;
+                this.totalTime = 0;
+                this.bookmarksVisible = false;
+                this.addingBookmark = false;
+                this.isDragging = false;
+                this.bookmarkTime = 0;
+                this.updateInterval = null;
+                this.isCommandPressed = false;
+                this.isHoveringVideo = false;
+                this.bookmarks = [];
+                this.videoId = this.extractVideoId();
+                
+                this.initializeElements();
+                this.bindEvents();
+                this.loadBookmarks();
+            }
+
+            initializeElements() {
+                this.videoContainer = this.container.querySelector('.video-container');
+                this.playPauseButton = this.container.querySelector('.start-stop-control');
+                this.progressContainer = this.container.querySelector('.progress-container');
+                this.progressIndicator = this.container.querySelector('.video-position');
+                this.bookmarkButton = this.container.querySelector('.bookmark-button');
+                this.bookmarksWrapper = this.container.querySelector('.bookmarks-wrapper');
+                this.addBookmarkBtn = this.container.querySelector('.add-bookmark-btn');
+                this.newBookmarkInput = this.container.querySelector('.new-bookmark-input');
+                this.bookmarksList = this.container.querySelector('.bookmarks-list');
+                this.videoInfo = this.container.querySelector('.video-info');
+                this.bottomControls = this.container.querySelector('.bottom-controls');
+            }
+
+            bindEvents() {
+                // Play/pause controls
+                this.videoContainer.addEventListener('click', () => this.togglePlay());
+                this.playPauseButton.addEventListener('click', () => this.togglePlay());
+
+                // Keyboard controls
+                this.videoContainer.addEventListener('mouseenter', () => {
+                    this.isHoveringVideo = true;
+                });
+                this.videoContainer.addEventListener('mouseleave', () => {
+                    this.isHoveringVideo = false;
+                });
+                
+                document.addEventListener('keydown', (e) => {
+                    if (e.code === 'Space' && this.isHoveringVideo) {
+                        e.preventDefault();
+                        this.togglePlay();
+                    }
+                    if (e.metaKey || e.ctrlKey) {
+                        this.isCommandPressed = true;
+                    }
+                });
+
+                document.addEventListener('keyup', (e) => {
+                    if (!e.metaKey && !e.ctrlKey) {
+                        this.isCommandPressed = false;
+                    }
+                });
+
+                // Progress bar
+                this.progressContainer.addEventListener('click', (e) => this.seek(e));
+
+                // Progress indicator dragging
+                this.progressIndicator.addEventListener('mousedown', (e) => this.startDrag(e));
+                document.addEventListener('mousemove', (e) => this.drag(e));
+                document.addEventListener('mouseup', () => this.endDrag());
+
+                // Bookmark controls
+                this.bookmarkButton.addEventListener('click', () => this.toggleBookmarks());
+                this.addBookmarkBtn.addEventListener('click', () => this.showAddBookmark());
+                
+                // New bookmark controls
+                const saveBtn = this.newBookmarkInput.querySelector('.save-bookmark');
+                const cancelBtn = this.newBookmarkInput.querySelector('.cancel-bookmark');
+                const input = this.newBookmarkInput.querySelector('input');
+
+                saveBtn.addEventListener('click', () => this.saveBookmark());
+                cancelBtn.addEventListener('click', () => this.cancelBookmark());
+                input.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') this.saveBookmark();
+                });
+
+                // Bookmark clicks and editing
+                this.bookmarksList.addEventListener('click', (e) => {
+                    const bookmark = e.target.closest('.bookmark');
+                    if (bookmark && !bookmark.querySelector('input')) {
+                        if (this.isCommandPressed) {
+                            this.deleteBookmark(bookmark);
+                        } else {
+                            const time = parseInt(bookmark.dataset.time);
+                            this.seekTo(time);
+                        }
+                    }
+                });
+
+                this.bookmarksList.addEventListener('dblclick', (e) => {
+                    const bookmark = e.target.closest('.bookmark');
+                    if (bookmark) {
+                        this.editBookmark(bookmark);
+                    }
+                });
+
+                // Bookmark hover effects
+                this.bookmarksList.addEventListener('mouseover', (e) => {
+                    const bookmark = e.target.closest('.bookmark');
+                    if (bookmark && this.isCommandPressed) {
+                        bookmark.style.backgroundColor = '#ff4444';
+                        bookmark.style.opacity = '0.8';
+                    }
+                });
+
+                this.bookmarksList.addEventListener('mouseout', (e) => {
+                    const bookmark = e.target.closest('.bookmark');
+                    if (bookmark && this.isCommandPressed) {
+                        bookmark.style.backgroundColor = '';
+                        bookmark.style.opacity = '';
+                    }
+                });
+            }
+
+            onPlayerReady() {
+                this.totalTime = this.player.getDuration();
+                
+                // Force highest quality
+                const availableQualities = this.player.getAvailableQualityLevels();
+                if (availableQualities && availableQualities.length > 0) {
+                    this.player.setPlaybackQuality(availableQualities[0]);
+                }
+                
+                this.updateVideoInfo();
+                this.updateDisplay();
+                this.updatePlayState();
+                
+                // Start update interval
+                this.updateInterval = setInterval(() => {
+                    if (this.player && this.player.getCurrentTime) {
+                        this.currentTime = this.player.getCurrentTime();
+                        this.updateDisplay();
+                    }
+                }, 100);
+            }
+
+            onPlayerStateChange(event) {
+                if (event.data === YT.PlayerState.PLAYING) {
+                    this.isPlaying = true;
+                } else if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+                    this.isPlaying = false;
+                }
+                this.updatePlayState();
+            }
+
+            togglePlay() {
+                if (!this.player) return;
+                
+                if (this.isPlaying) {
+                    this.player.pauseVideo();
+                } else {
+                    this.player.playVideo();
+                }
+            }
+
+            updatePlayState() {
+                const playIcon = this.playPauseButton.querySelector('.play-icon');
+                const pauseIcon = this.playPauseButton.querySelector('.pause-icon');
+                
+                if (this.isPlaying) {
+                    this.videoInfo.style.opacity = '0.63';
+                    this.bottomControls.style.opacity = '1';
+                    playIcon.style.display = 'none';
+                    pauseIcon.style.display = 'block';
+                } else {
+                    this.videoInfo.style.opacity = '1';
+                    playIcon.style.display = 'block';
+                    pauseIcon.style.display = 'none';
+                    
+                    if (this.currentTime === 0) {
+                        this.bottomControls.style.opacity = '0.5';
+                    } else {
+                        this.bottomControls.style.opacity = '1';
+                    }
+                }
+            }
+
+            seek(e) {
+                if (this.isDragging || !this.player) return;
+                
+                const rect = this.progressContainer.getBoundingClientRect();
+                const clickX = e.clientX - rect.left;
+                const percentage = clickX / rect.width;
+                this.seekTo(percentage * this.totalTime);
+            }
+
+            startDrag(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.isDragging = true;
+                this.progressIndicator.style.cursor = 'grabbing';
+                document.body.style.userSelect = 'none';
+            }
+
+            drag(e) {
+                if (!this.isDragging || !this.player) return;
+                
+                const rect = this.progressContainer.getBoundingClientRect();
+                const dragX = e.clientX - rect.left;
+                const percentage = Math.max(0, Math.min(1, dragX / rect.width));
+                this.seekTo(percentage * this.totalTime);
+            }
+
+            endDrag() {
+                if (!this.isDragging) return;
+                
+                this.isDragging = false;
+                this.progressIndicator.style.cursor = 'grab';
+                document.body.style.userSelect = '';
+            }
+
+            seekTo(time) {
+                if (!this.player) return;
+                
+                this.currentTime = Math.max(0, Math.min(time, this.totalTime));
+                this.player.seekTo(time, true);
+                this.updateDisplay();
+            }
+
+            updateDisplay() {
+                if (this.totalTime > 0) {
+                    const percentage = this.currentTime / this.totalTime;
+                    const progressBarWidth = 472;
+                    const indicatorPosition = percentage * progressBarWidth;
+                    this.progressIndicator.style.left = `${indicatorPosition - 10}px`;
+                }
+            }
+
+            formatTime(seconds) {
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${mins}:${secs.toString().padStart(2, '0')}`;
+            }
+
+            toggleBookmarks() {
+                this.bookmarksVisible = !this.bookmarksVisible;
+                
+                if (this.bookmarksVisible) {
+                    this.bookmarksWrapper.classList.remove('video-player-bookmarks-hiding');
+                    this.bookmarksWrapper.classList.add('video-player-bookmarks-showing');
+                    this.addBookmarkBtn.style.opacity = '1';
+                } else {
+                    this.bookmarksWrapper.classList.remove('video-player-bookmarks-showing');
+                    this.bookmarksWrapper.classList.add('video-player-bookmarks-hiding');
+                    this.addBookmarkBtn.style.opacity = '0';
+                }
+            }
+
+            showAddBookmark() {
+                this.addingBookmark = true;
+                this.bookmarkTime = this.currentTime;
+                this.newBookmarkInput.style.display = 'block';
+                const input = this.newBookmarkInput.querySelector('input');
+                input.focus();
+                const timeSpan = this.newBookmarkInput.querySelector('.new-bookmark-time');
+                timeSpan.textContent = this.formatTime(this.bookmarkTime);
+            }
+
+            saveBookmark() {
+                const input = this.newBookmarkInput.querySelector('input');
+                const text = input.value.trim();
+                
+                if (text) {
+                    this.addBookmark(text, this.bookmarkTime);
+                    input.value = '';
+                }
+                
+                this.cancelBookmark();
+            }
+
+            cancelBookmark() {
+                this.addingBookmark = false;
+                this.newBookmarkInput.style.display = 'none';
+                const input = this.newBookmarkInput.querySelector('input');
+                input.value = '';
+            }
+
+            addBookmark(text, time) {
+                // Add to bookmarks array
+                const bookmarkData = { text, time };
+                this.bookmarks.push(bookmarkData);
+                this.saveBookmarks();
+                
+                // Create and add DOM element
+                this.createBookmarkElement(text, time);
+            }
+
+            editBookmark(bookmark) {
+                const textElement = bookmark.querySelector('.bookmark-text');
+                const currentText = textElement.textContent || '';
+                
+                textElement.style.opacity = '0';
+                
+                setTimeout(() => {
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = currentText;
+                    input.className = 'bookmark-input';
+                    input.style.cssText = 'flex: 1; border: none; outline: none; background: transparent; color: var(--text-normal); font-size: 11px; font-family: var(--font-interface); font-weight: 400; opacity: 0; transform: scale(0.95);';
+                    
+                    textElement.style.display = 'none';
+                    bookmark.insertBefore(input, textElement);
+                    
+                    requestAnimationFrame(() => {
+                        input.style.opacity = '1';
+                        input.style.transform = 'scale(1)';
+                        input.style.transition = 'all 0.2s ease';
+                    });
+                    
+                    input.focus();
+                    input.select();
+                    
+                    const saveEdit = () => {
+                        const newText = input.value.trim();
+                        if (newText) {
+                            textElement.textContent = newText;
+                            
+                            // Update bookmarks array
+                            const time = parseInt(bookmark.dataset.time || '0');
+                            const bookmarkIndex = this.bookmarks.findIndex(b => b.time === time);
+                            if (bookmarkIndex !== -1) {
+                                this.bookmarks[bookmarkIndex].text = newText;
+                                this.saveBookmarks();
+                            }
+                        }
+                        textElement.style.display = 'block';
+                        textElement.style.opacity = '1';
+                        input.remove();
+                    };
+                    
+                    const cancelEdit = () => {
+                        textElement.style.display = 'block';
+                        textElement.style.opacity = '1';
+                        input.remove();
+                    };
+                    
+                    input.addEventListener('blur', saveEdit);
+                    input.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') saveEdit();
+                    });
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Escape') cancelEdit();
+                    });
+                }, 100);
+            }
+
+            deleteBookmark(bookmark) {
+                const time = parseInt(bookmark.dataset.time || '0');
+                
+                // Remove from bookmarks array
+                this.bookmarks = this.bookmarks.filter(b => b.time !== time);
+                this.saveBookmarks();
+                
+                bookmark.style.transition = 'all 0.3s ease';
+                bookmark.style.opacity = '0';
+                bookmark.style.transform = 'scale(0.9)';
+                
+                setTimeout(() => {
+                    bookmark.remove();
+                }, 300);
+            }
+
+            extractVideoId() {
+                // Extract video ID from current URL or iframe src
+                const iframe = this.container.querySelector('iframe');
+                if (iframe && iframe.src) {
+                    const match = iframe.src.match(/\/embed\/([^?]+)/);
+                    return match ? match[1] : 'default';
+                }
+                return 'default';
+            }
+
+            saveBookmarks() {
+                if (this.videoId) {
+                    localStorage.setItem(`video-bookmarks-${this.videoId}`, JSON.stringify(this.bookmarks));
+                }
+            }
+
+            loadBookmarks() {
+                if (this.videoId) {
+                    const saved = localStorage.getItem(`video-bookmarks-${this.videoId}`);
+                    if (saved) {
+                        this.bookmarks = JSON.parse(saved);
+                        this.renderBookmarks();
+                    }
+                }
+            }
+
+            renderBookmarks() {
+                this.bookmarksList.innerHTML = '';
+                this.bookmarks
+                    .sort((a, b) => a.time - b.time)
+                    .forEach(bookmark => {
+                        this.createBookmarkElement(bookmark.text, bookmark.time);
+                    });
+            }
+
+            createBookmarkElement(text, time) {
+                const bookmark = document.createElement('div');
+                bookmark.className = 'bookmark';
+                bookmark.setAttribute('data-time', Math.floor(time).toString());
+                bookmark.style.cssText = 'padding-left: 13px; padding-right: 13px; padding-top: 5px; padding-bottom: 5px; background: var(--background-primary); box-shadow: 0px 0px 2.799999952316284px rgba(0, 0, 0, 0.25); border-radius: 3px; justify-content: space-between; align-items: center; gap: 8px; display: flex; cursor: pointer; margin: 5px;';
+                
+                bookmark.innerHTML = `
+                    <div class="bookmark-text" style="flex: 1; color: var(--text-normal); font-size: 11px; font-family: var(--font-interface); font-weight: 400;">${text}</div>
+                    <div class="timestamp" style="color: var(--text-muted); font-size: 11px; font-family: var(--font-interface); font-weight: 400;">${this.formatTime(time)}</div>
+                `;
+                
+                this.bookmarksList.appendChild(bookmark);
+            }
+
+            updateVideoInfo() {
+                if (this.player && this.player.getVideoData) {
+                    const videoData = this.player.getVideoData();
+                    
+                    const videoTitle = this.container.querySelector('.video-title');
+                    const videoCreator = this.container.querySelector('.video-creator');
+                    
+                    if (videoData.title && videoTitle) {
+                        videoTitle.textContent = videoData.title;
+                        videoTitle.style.display = 'block';
+                    }
+                    
+                    if (videoData.author && videoCreator) {
+                        videoCreator.textContent = videoData.author;
+                        videoCreator.style.display = 'block';
+                    }
+                }
+            }
+
+            destroy() {
+                if (this.updateInterval) {
+                    clearInterval(this.updateInterval);
+                    this.updateInterval = null;
+                }
+            }
+        }
+
+        // YouTube API functions
+        function loadYouTubeAPI() {
+            return new Promise((resolve) => {
+                if (window.YT && window.YT.Player) {
+                    resolve();
+                    return;
+                }
+
+                const existingScript = document.querySelector('script[src*="youtube.com/iframe_api"]');
+                if (existingScript) {
+                    window.onYouTubeIframeAPIReady = resolve;
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://www.youtube.com/iframe_api';
+                script.async = true;
+                
+                window.onYouTubeIframeAPIReady = resolve;
+                document.head.appendChild(script);
+            });
+        }
+
+        function extractYouTubeVideoId(url) {
+            const regex = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+            const match = url.match(regex);
+            return match ? match[1] : null;
+        }
+
+        async function createVideoPlayer(videoId) {
+            await loadYouTubeAPI();
+
+            const playerId = 'youtube-player-' + Math.random().toString(36).substr(2, 9);
+            const container = document.getElementById('video-player-container');
+
+            container.innerHTML = `
+                <div class="video-player-wrapper" style="width: 550px; margin: 0 auto; position: relative;">
+                    <div class="video-wrapper" style="padding-left: 24px; padding-right: 24px; flex-direction: column; justify-content: flex-start; align-items: center; gap: 10px; display: flex">
+                        <div class="top-section" style="align-self: stretch; justify-content: flex-start; align-items: center; gap: 15px; display: inline-flex">
+                            <div class="video-info" style="padding-top: 6px; padding-bottom: 6px; border-radius: 6px; justify-content: flex-start; align-items: flex-end; gap: 20px; display: flex; transition: opacity 0.3s ease; flex: 1;">
+                                <div class="video-title" style="display: none; color: var(--text-normal); font-size: 15px; font-family: var(--font-interface); font-weight: 600; word-wrap: break-word; flex: 1; min-width: 0;"></div>
+                                <div class="video-creator" style="display: none; width: 120px; color: var(--text-muted); font-size: 8px; font-family: var(--font-interface); font-weight: 300; word-wrap: break-word; flex-shrink: 0;"></div>
+                            </div>
+                            <div class="bookmark-button" style="cursor: pointer;">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M1 4.45488C1 2.82623 1 2.01191 1.54917 1.50596C2.09835 1 2.98223 1 4.75 1H7.25C9.01777 1 9.90165 1 10.4508 1.50596C11 2.01191 11 2.82623 11 4.45488V8.3863C11 9.93137 11 10.7039 10.4723 10.9402C9.94463 11.1765 9.28528 10.6992 7.96658 9.74462L7.54455 9.43912C6.80307 8.90238 6.43233 8.634 6 8.634C5.56767 8.634 5.19693 8.90238 4.45545 9.43912L4.03341 9.74462C2.71472 10.6992 2.05537 11.1765 1.52768 10.9402C1 10.7039 1 9.93137 1 8.3863V4.45488Z" stroke="var(--text-muted)"/>
+                                </svg>
+                            </div>
+                        </div>
+                        
+                        <div style="position: relative; cursor: pointer;" class="video-container">
+                            <div class="ytmb-holder" style="width: 502px; height: 282px; box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25); border-radius: 6px; overflow: hidden; aspect-ratio: 16/9; pointer-events: none;">
+                                <div id="${playerId}" style="width: 200%; height: 100%; margin-left: -50%; pointer-events: none;"></div>
+                            </div>
+                        </div>
+
+                        <div class="bottom-controls" style="padding-left: 10px; padding-right: 10px; padding-top: 6px; padding-bottom: 6px; flex-direction: column; justify-content: center; align-items: center; gap: 19px; display: flex; transition: opacity 0.3s ease; overflow: visible;">
+                            <div style="position: relative; width: 472px; height: 20px; cursor: pointer;" class="progress-container">
+                                <div class="video-length" style="position: absolute; top: 50%; left: 0; transform: translateY(-50%);">
+                                    <svg width="472" height="20" viewBox="0 0 472 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M0 10H472" stroke="var(--text-muted)" stroke-width="2" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                
+                                <div class="video-position" style="position: absolute; top: 50%; left: 0px; transform: translateY(-50%); transition: left 0.1s ease; cursor: grab;">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g filter="url(#filter0_d_progress)">
+                                            <circle cx="10" cy="10" r="4" fill="var(--interactive-accent)"/>
+                                        </g>
+                                        <defs>
+                                            <filter id="filter0_d_progress" x="3" y="3" width="14" height="17" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+                                                <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+                                                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+                                                <feOffset dy="3"/>
+                                                <feGaussianBlur stdDeviation="1.15"/>
+                                                <feComposite in2="hardAlpha" operator="out"/>
+                                                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+                                                <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_progress"/>
+                                                <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_progress" result="shape"/>
+                                            </filter>
+                                        </defs>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; overflow: visible;">
+                                <div class="start-stop-control" style="cursor: pointer;">
+                                    <svg width="11" height="12" viewBox="0 0 11 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <g class="play-icon">
+                                            <path d="M10.189 6.5532C10.6037 6.29769 10.6037 5.70231 10.189 5.4468L1.51236 0.100203C1.07165 -0.171362 0.5 0.141017 0.5 0.653406V11.3466C0.5 11.859 1.07165 12.1714 1.51236 11.8998L10.189 6.5532Z" fill="var(--text-normal)"/>
+                                        </g>
+                                        <g class="pause-icon" style="display: none;">
+                                            <path d="M0.5 1.33333C0.5 0.596954 1.0596 0 1.75 0H3C3.6904 0 4.25 0.596954 4.25 1.33333V10.6667C4.25 11.403 3.6904 12 3 12H1.75C1.0596 12 0.5 11.403 0.5 10.6667V1.33333Z" fill="var(--text-normal)"/>
+                                            <path d="M6.75 1.33333C6.75 0.596954 7.3096 0 8 0H9.25C9.9404 0 10.5 0.596954 10.5 1.33333V10.6667C10.5 11.403 9.9404 12 9.25 12H8C7.3096 12 6.75 11.403 6.75 10.6667V1.33333Z" fill="var(--text-normal)"/>
+                                        </g>
+                                    </svg>
+                                </div>
+                                
+                                <div class="add-bookmark-btn" style="cursor: pointer; padding: 5px; border-radius: 4px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease;">
+                                    <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M13.7582 16.897L13.4134 16.5349L13.4134 16.5349L13.7582 16.897ZM15.5 10.125C15.5 9.84886 15.2761 9.625 15 9.625C14.7239 9.625 14.5 9.84886 14.5 10.125H15.5ZM13.897 16.7582L13.5349 16.4134L13.5349 16.4134L13.897 16.7582ZM2.10301 5.24184L2.46514 5.58661L2.46514 5.58661L2.10301 5.24184ZM8.875 4.5C9.15114 4.5 9.375 4.27614 9.375 4C9.375 3.72386 9.15114 3.5 8.875 3.5V4.5ZM2.24184 5.10301L1.89707 4.74089L1.89707 4.74089L2.24184 5.10301ZM5 8.5C4.72386 8.5 4.5 8.72386 4.5 9C4.5 9.27614 4.72386 9.5 5 9.5V8.5ZM11 9.5C11.2761 9.5 11.5 9.27614 11.5 9C11.5 8.72386 11.2761 8.5 11 8.5V9.5ZM5 12.5C4.72386 12.5 4.5 12.7239 4.5 13C4.5 13.2761 4.72386 13.5 5 13.5V12.5ZM8 13.5C8.27614 13.5 8.5 13.2761 8.5 13C8.5 12.7239 8.27614 12.5 8 12.5V13.5ZM14.5 7C14.5 7.27614 14.7239 7.5 15 7.5C15.2761 7.5 15.5 7.27614 15.5 7H14.5ZM15.5 1C15.5 0.723858 15.2761 0.5 15 0.5C14.7239 0.5 14.5 0.723858 14.5 1H15.5ZM12 3.5C11.7239 3.5 11.5 3.72386 11.5 4C11.5 4.27614 11.7239 4.5 12 4.5V3.5ZM18 4.5C18.2761 4.5 18.5 4.27614 18.5 4C18.5 3.72386 18.2761 3.5 18 3.5V4.5ZM1 11.875H0.5V16H1H1.5V11.875H1ZM3 18V18.5H7.125V18V17.5H3V18ZM7.125 18V18.5C8.93622 18.5 10.3433 18.501 11.4404 18.3579C12.551 18.2131 13.4161 17.9131 14.1029 17.2591L13.7582 16.897L13.4134 16.5349C12.9417 16.9839 12.3151 17.2354 11.3111 17.3663C10.2937 17.499 8.96354 17.5 7.125 17.5V18ZM15 10.125H14.5C14.5 11.9635 14.499 13.2937 14.3663 14.3111C14.2354 15.3151 13.9839 15.9417 13.5349 16.4134L13.897 16.7582L14.2591 17.1029C14.9131 16.4161 15.2131 15.551 15.3579 14.4404C15.501 13.3433 15.5 11.9362 15.5 10.125H15ZM13.7582 16.897L14.1029 17.2591C14.1563 17.2083 14.2083 17.1563 14.2591 17.1029L13.897 16.7582L13.5349 16.4134C13.4954 16.4549 13.4549 16.4954 13.4134 16.5349L13.7582 16.897ZM1 16H0.5C0.5 16.4573 0.498938 16.8505 0.54107 17.1639C0.585136 17.4917 0.684509 17.8058 0.93934 18.0607L1.29289 17.7071L1.64645 17.3536C1.60838 17.3155 1.56131 17.2475 1.53215 17.0306C1.50106 17.7994 1.5 16.4855 1.5 16H1ZM3 18V17.5C2.51446 17.5 2.20061 17.4989 1.96935 17.4678C1.75248 17.4387 1.68451 17.3916 1.64645 17.3536L1.29289 17.7071L0.93934 18.0607C1.19417 18.3155 1.50835 18.4149 1.8361 18.4589C2.14948 18.5011 2.54273 18.5 3 18.5V18ZM1 11.875H1.5C1.5 10.0365 1.501 8.70627 1.63368 7.68887C1.7646 6.68494 2.01607 6.05828 2.46514 5.58661L2.10301 5.24184L1.74089 4.89707C1.08694 5.58393 0.786905 6.44897 0.642075 7.55955C0.499002 8.65665 0.5 10.0638 0.5 11.875H1ZM8.875 4V3.5C7.06378 3.5 5.65665 3.499 4.55955 3.64207C3.44897 3.78691 2.58393 4.08694 1.89707 4.74089L2.24184 5.10301L2.58661 5.46514C3.05828 5.01607 3.68494 4.7646 4.68887 4.63368C5.70627 4.501 7.03646 4.5 8.875 4.5V4ZM2.10301 5.24184L2.46514 5.58661C2.50463 5.54513 2.54513 5.50463 2.58661 5.46514L2.24184 5.10301L1.89707 4.74089C1.84374 4.79166 1.79166 4.84374 1.74089 4.89707L2.10301 5.24184ZM5 9V9.5H11V9V8.5H5V9ZM5 13V13.5H8V13V12.5H5V13ZM15 7H15.5V4H15H14.5V7H15ZM15 4H15.5V1H15H14.5V4H15ZM12 4V4.5H15V4V3.5H12V4ZM15 4V4.5H18V4V3.5H15V4Z" fill="var(--text-normal)"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bookmarks-wrapper video-player-bookmarks-hiding" style="width: 444px; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 22px; display: flex; margin: 0 auto; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: top; opacity: 0; max-height: 0; margin-top: 0; margin-bottom: 0; transform: scaleY(0); overflow: hidden;">
+                        <div class="bookmarks-list" style="width: 100%; flex-direction: column; gap: 10px; display: flex; padding: 5px;">
+                        </div>
+                    </div>
+
+                    <div class="new-bookmark-input" style="width: 444px; margin: 10px auto; padding: 13px; background: var(--background-primary); box-shadow: 0px 0px 2.8px rgba(0, 0, 0, 0.25); border-radius: 4px; display: none;">
+                        <input type="text" placeholder="Add a note for this moment..." style="width: 100%; border: none; outline: none; font-size: 11px; font-family: var(--font-interface); color: var(--text-normal); margin-bottom: 8px; background: transparent;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="color: var(--text-normal); font-size: 11px; font-family: var(--font-interface);" class="new-bookmark-time">0:00</span>
+                            <div>
+                                <button class="cancel-bookmark" style="background: transparent; border: 1px solid var(--background-modifier-border); padding: 4px 8px; margin-right: 5px; border-radius: 3px; font-size: 10px; cursor: pointer; color: var(--text-normal);">Cancel</button>
+                                <button class="save-bookmark" style="background: var(--interactive-accent); color: var(--text-on-accent); border: none; padding: 4px 8px; border-radius: 3px; font-size: 10px; cursor: pointer;">Save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const player = new YT.Player(playerId, {
+                height: '282',
+                width: '1004',
+                videoId: videoId,
+                playerVars: {
+                    'autoplay': 1,
+                    'mute': 1,
+                    'loop': 1,
+                    'controls': 0,
+                    'color': 'white',
+                    'modestbranding': 1,
+                    'playsinline': 1,
+                    'enablejsapi': 1,
+                    'playlist': videoId,
+                    'rel': 0,
+                    'hd': 1,
+                    'vq': 'hd2160',
+                    'quality': 'highres',
+                    'suggestedQuality': 'hd2160',
+                    'iv_load_policy': 3
+                },
+                events: {
+                    'onReady': (event) => {
+                        if (playerInstance) {
+                            playerInstance.destroy();
+                        }
+                        playerInstance = new VideoPlayerInstance(container, player);
+                        playerInstance.onPlayerReady();
+                        player.unMute();
+                    },
+                    'onStateChange': (event) => {
+                        if (playerInstance) {
+                            playerInstance.onPlayerStateChange(event);
+                        }
+                    }
+                }
+            });
+
+            currentPlayer = player;
+        }
+
+        // Demo functions
+        function loadVideo() {
+            const url = document.getElementById('video-url').value;
+            const videoId = extractYouTubeVideoId(url);
+            
+            if (videoId) {
+                createVideoPlayer(videoId);
+            } else {
+                alert('Please enter a valid YouTube URL');
+            }
+        }
+
+        function loadSampleVideo(videoId) {
+            createVideoPlayer(videoId);
+        }
+
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            
+            if (isDarkTheme) {
+                document.documentElement.style.setProperty('--background-primary', '#202020');
+                document.documentElement.style.setProperty('--background-secondary', '#161616');
+                document.documentElement.style.setProperty('--background-modifier-border', '#3a3a3a');
+                document.documentElement.style.setProperty('--background-modifier-hover', '#2a2a2a');
+                document.documentElement.style.setProperty('--text-normal', '#dcddde');
+                document.documentElement.style.setProperty('--text-muted', '#888888');
+                document.documentElement.style.setProperty('--interactive-accent', '#7c3aed');
+                document.documentElement.style.setProperty('--interactive-accent-hover', '#6d28d9');
+            } else {
+                document.documentElement.style.setProperty('--background-primary', '#ffffff');
+                document.documentElement.style.setProperty('--background-secondary', '#f5f5f5');
+                document.documentElement.style.setProperty('--background-modifier-border', '#e0e0e0');
+                document.documentElement.style.setProperty('--background-modifier-hover', '#f0f0f0');
+                document.documentElement.style.setProperty('--text-normal', '#2e3338');
+                document.documentElement.style.setProperty('--text-muted', '#888888');
+                document.documentElement.style.setProperty('--interactive-accent', '#007acc');
+                document.documentElement.style.setProperty('--interactive-accent-hover', '#005a9e');
+            }
+        }
+
+        // Initialize with default video
+        window.addEventListener('load', () => {
+            loadVideo();
+        });
+    </script>
+</body>
+</html>
